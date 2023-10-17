@@ -68,6 +68,7 @@ def train(model,
 
         lr = next(iter(optimizer.param_groups))['lr']
         turn = True
+        a = [5,6,7]
         for _, data in enumerate(tqdm(trainloader)):
             images, labels = data
 
@@ -75,11 +76,15 @@ def train(model,
             label_density = labels[1]
             label_birads = label_birads - 1
             label_density = label_density - 1
+            # b = [item.item() for item in label_birads]
+            # a.extend(b)
+            # print(a)
+            
             images= images.to(device)
             label_birads = label_birads.to(device)
             label_density = label_density.to(device)
             optimizer.zero_grad()
-            if have_prj:
+            if have_prj:  # not used
                 if turn:
                     p, logits = model(images)
                     pminer = miner(p, labels)
@@ -95,6 +100,7 @@ def train(model,
                 turn = not turn
             else:
                 _, pred_birad, pred_density = model(images)
+                # print(pred_birad)
                 # print(pred_birad.shape)
                 # print(label_birads)
   
@@ -115,9 +121,9 @@ def train(model,
         # print('Validation set: Avg Val CE Loss: {:.4f}; Avg Val Metric Loss: {:.4f}; Val accuracy: {:.2f}%'.format(val_loss_avg, val_metric_loss_avg, 100. * val_accuracy))
         # f.write('Validation set: Avg Val CE Loss: {:.4f}; Avg Val Metric Loss: {:.4f}; Val accuracy: {:.2f}% \n'.format(val_loss_avg, val_metric_loss_avg, 100. * val_accuracy))
         # eval testset
-        test_loss_avg, birads_loss_avg, density_loss_avg, accuracy_birads, accuracy_density = eval(model, device, have_prj, testloader, metric_loss, miner, criterion, split='test')
-        print('Test set: Avg Focal Loss: {:.4f};, Avg Birads Focal Loss: {:.4f}; Avg Density Focal Loss: {:.4f}; Birads accuracy: {:.2f}%; Density accuracy: {:.2f}% '.format(test_loss_avg,birads_loss_avg,density_loss_avg, 100. * accuracy_birads,100. * accuracy_density))
-        f.write('Test set: Avg Focal Loss: {:.4f};, Avg Birads Focal Loss: {:.4f}; Avg Density Focal Loss: {:.4f}; Birads accuracy: {:.2f}%; Density accuracy: {:.2f}% '.format(test_loss_avg,birads_loss_avg,density_loss_avg, 100. * accuracy_birads,100. * accuracy_density))
+        test_loss_avg, birads_loss_avg, density_loss_avg, accuracy_birads, accuracy_density, f1_birads, f1_density = eval(model, device, have_prj, testloader, metric_loss, miner, criterion, split='test')
+        print('Test set: Avg Focal Loss: {:.4f};, Avg Birads Focal Loss: {:.4f}; Avg Density Focal Loss: {:.4f}; Birads accuracy: {:.2f}%; Density accuracy: {:.2f}%; f1_birads: {:.2f}%; f1_density: {:.2f}% '.format(test_loss_avg,birads_loss_avg,density_loss_avg, 100. * accuracy_birads,100. * accuracy_density,100. * f1_birads,100. * f1_density))
+        f.write('Test set: Avg Focal Loss: {:.4f};, Avg Birads Focal Loss: {:.4f}; Avg Density Focal Loss: {:.4f}; Birads accuracy: {:.2f}%; Density accuracy: {:.2f}%; f1_birads: {:.2f}%; f1_density: {:.2f}% '.format(test_loss_avg,birads_loss_avg,density_loss_avg, 100. * accuracy_birads,100. * accuracy_density,100. * f1_birads,100. * f1_density))
         
         test_accuracy = (accuracy_birads + accuracy_density)/2
         # save checkpoint

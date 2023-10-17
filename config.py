@@ -1,5 +1,5 @@
 seed = 42
-batch_size = 16
+batch_size = 32
 end_epoch = 20
 init_lr = 0.01
 lr_milestones = [15, 30, 45, 60]

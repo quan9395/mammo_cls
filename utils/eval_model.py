@@ -1,6 +1,7 @@
 import torch
 from tqdm import tqdm
 import torch.nn as nn
+from sklearn.metrics import f1_score
 
 
 def eval(model, device, have_prj, loader, metric_loss, miner, criterion, split):
@@ -12,7 +13,10 @@ def eval(model, device, have_prj, loader, metric_loss, miner, criterion, split):
     metric_loss_sum = 0
     correct_birads = 0
     correct_density = 0
-
+    f1_pred_birads = []
+    f1_res_birads = []
+    f1_pred_density = []
+    f1_res_density = []
     with torch.no_grad():
         for i, data in enumerate(tqdm(loader)):
             images, labels = data
@@ -20,6 +24,11 @@ def eval(model, device, have_prj, loader, metric_loss, miner, criterion, split):
             label_density = labels[1]
             label_birads = label_birads - 1
             label_density = label_density - 1
+            b = [item.item() for item in label_birads]
+            c = [item.item() for item in label_density]
+            f1_res_birads.extend(b)
+            f1_res_density.extend(c)
+            # print(a)
             images = images.to(device)
             label_birads = label_birads.to(device)
             label_density = label_density.to(device)
@@ -43,7 +52,13 @@ def eval(model, device, have_prj, loader, metric_loss, miner, criterion, split):
             pred2 = pred_density.max(1, keepdim=True)[1]
             correct_birads += pred1.eq(label_birads.view_as(pred1)).sum().item()
             correct_density += pred2.eq(label_density.view_as(pred2)).sum().item()
+            b = [item.item() for item in pred1]
+            c = [item.item() for item in pred2]
+            f1_pred_birads.extend(b)
+            f1_pred_density.extend(c)
 
+    f1_birads = f1_score(f1_res_birads, f1_pred_birads, average='macro')
+    f1_density = f1_score(f1_res_density, f1_pred_density, average='macro')
     loss_avg = ce_loss_sum / (i+1)
     birads_loss_avg = birads_loss_sum / (i+1)
     density_loss_avg = density_loss_sum / (i+1)
@@ -53,4 +68,4 @@ def eval(model, device, have_prj, loader, metric_loss, miner, criterion, split):
     accuracy_birads = correct_birads / len(loader.dataset)
     accuracy_density = correct_density / len(loader.dataset)
 
-    return loss_avg, birads_loss_avg, density_loss_avg, accuracy_birads, accuracy_density
+    return loss_avg, birads_loss_avg, density_loss_avg, accuracy_birads, accuracy_density, f1_birads, f1_density

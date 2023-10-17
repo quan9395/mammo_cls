@@ -77,7 +77,7 @@ if __name__ == '__main__':
     all_preds_density = torch.cat(all_preds_density, axis=0).to(device)
     all_labels_birads = torch.cat(all_labels_birads, axis=0).to(device)
     all_labels_density = torch.cat(all_labels_density, axis=0).to(device)
-    # all_preds_birads, all_preds_density, all_labels_birads, all_labels_density = all_preds_birads.cpu(), all_preds_density.cpu(), all_labels_birads.cpu(), all_labels_density.cpu()
+    all_preds_birads, all_preds_density, all_labels_birads, all_labels_density = all_preds_birads.cpu(), all_preds_density.cpu(), all_labels_birads.cpu(), all_labels_density.cpu()
 
     print("birads1: ", (all_labels_birads == 0).sum().item())
     print("birads2: ", (all_labels_birads == 1).sum().item())
